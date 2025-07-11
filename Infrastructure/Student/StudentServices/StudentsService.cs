@@ -37,13 +37,13 @@ public class StudentsService(DataContext context,
         var student = await context.Students.FindAsync(id);
         if (student == null)
         {
-            return new Response<string>("Student not found", HttpStatusCode.NotFound);
+            return Response<string>.Error("Student not found", HttpStatusCode.NotFound);
         }
 
-        var res = await context.SaveChangesAsync();
+        var res = await studentRepository.DeleteAsync(student);
         return res == 0
-        ? new Response<string>("Something went wrong", HttpStatusCode.InternalServerError)
-        : new Response<string>(null, "Succes");
+        ? Response<string>.Error("Something went wrong", HttpStatusCode.InternalServerError)
+        : Response<string>.Success(null, "Succes");
         
     }
 
@@ -52,31 +52,31 @@ public class StudentsService(DataContext context,
         var student = await context.Students.FindAsync(studentDTO.Id);
         if (student == null)
         {
-            return new Response<string>("Student not found", HttpStatusCode.NotFound);
+            return Response<string>.Error("Student not found", HttpStatusCode.NotFound);
         }
         if (studentDTO.DOB >= DateTime.Now)
         {
-            return new Response<string>("Date of birth cant be higher than now", HttpStatusCode.BadRequest);
+            return Response<string>.Error("Date of birth cant be higher than now", HttpStatusCode.BadRequest);
         }
 
-        mapper.Map(studentDTO, student);
-        var res = await context.SaveChangesAsync();
+        student.ToEntity(studentDTO);
+        var res = await studentRepository.UpdateAsync(student);
         return res == 0
-        ? new Response<string>("Something went wrong", HttpStatusCode.InternalServerError)
-        : new Response<string>(null, "Succes");
+        ? Response<string>.Error("Something went wrong", HttpStatusCode.InternalServerError)
+        : Response<string>.Success(null, "Succes");
 
     }
 
     public async Task<Response<GetStudentDTO?>> GetStudentAsync(int id)
     {
-        var student = await context.Students.FindAsync(id);
+        var student = await context.Students.AsNoTracking().FirstOrDefaultAsync(s => s.Id == id);
         if (student == null)
         {
-            return new Response<GetStudentDTO?>("Student not found", HttpStatusCode.NotFound);
+            return Response<GetStudentDTO?>.Error("Student not found", HttpStatusCode.NotFound);
         }
-        var mappedStudent = mapper.Map<GetStudentDTO>(student);
+        var mappedStudent = student.ToDTO();
 
-        return new Response<GetStudentDTO?>(mappedStudent);
+        return Response<GetStudentDTO?>.Success(mappedStudent);
         
     }
 
@@ -87,7 +87,7 @@ public class StudentsService(DataContext context,
 
         
 
-        return new PagedResponse<List<GetStudentDTO>>(mappedStudents, ValidFilter.PageNumber, ValidFilter.PageSize, totalRecords);
+        return PagedResponse<List<GetStudentDTO>>.Success(mappedStudents, ValidFilter.PageNumber, ValidFilter.PageSize, totalRecords);
 
     }
 

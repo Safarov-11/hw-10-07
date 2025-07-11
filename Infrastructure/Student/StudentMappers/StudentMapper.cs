@@ -35,4 +35,15 @@ public static class StudentMapper
         }).ToList();
     }
 
+    public static GetStudentDTO ToDTO(this Domain.Entites.Student student)
+    {
+        return new GetStudentDTO
+        {
+            FirstName = student.FirstName,
+            LastName = student.LastName,
+            DOB = student.DOB,
+            Grade = student.Grade
+        };
+    }
+
 }

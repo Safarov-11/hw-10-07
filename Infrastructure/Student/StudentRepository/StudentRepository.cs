@@ -1,4 +1,5 @@
 using Domain.ApiResponse;
+using Domain.DTOs.StudentDTO;
 using Domain.Entites;
 using Domain.Filters;
 using Domain.Paginations;
@@ -63,9 +64,9 @@ public class StudentRepository(DataContext context) : IStudentRepository
         return await context.SaveChangesAsync();
     }
 
-    public async Task<int> GetAsync(int id)
+    public async Task<Domain.Entites.Student?> GetAsync(int id)
     {
-        await context.Students.FindAsync(id);
-        return await context.SaveChangesAsync();
+        var student = await context.Students.FindAsync(id);
+        return student;
     }
 }
